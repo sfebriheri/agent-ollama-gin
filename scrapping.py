@@ -9,6 +9,17 @@ class NewsArticleScraper:
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
+        # Site-specific patterns for content extraction
+        self.site_patterns = {
+            'metrotvnews.com': {
+                'content': {'tag': 'div', 'class_': 'detail-text'},
+                'title': {'tag': 'h1', 'class_': 'title'}
+            },
+            'kompas.id': {
+                'content': {'tag': 'div', 'class_': 'read-page--content'},
+                'title': {'tag': 'h1', 'class_': 'read-page--title'}
+            }
+        }
 
     def clean_text(self, text):
         """Clean extracted text by removing extra whitespace and unwanted characters."""
@@ -72,11 +83,19 @@ class NewsArticleScraper:
 
         return None
 
-    def extract_main_content(self, soup):
+    def extract_main_content(self, soup, url):
         """Extract main article content while filtering out advertisements and irrelevant content."""
+        # Get domain from URL to determine which site patterns to use
+        domain = re.search(r'(?:https?://)?(?:www\.)?([^/]+)', url).group(1)
+        
         # Common content container patterns
         content_patterns = [
-            {'tag': 'div', 'class_': lambda x: x and any(c in x for c in ['kcm-read-text', 'read-text'])},  # Kompas specific
+            # Site-specific patterns first
+            {'tag': 'div', 'class_': 'read-page--content'},  # Kompas new pattern
+            {'tag': 'div', 'class_': 'detail-text'},  # Metrotvnews pattern
+            {'tag': 'div', 'class_': 'read-page-content'},  # Kompas alternative
+            # Generic patterns as fallback
+            {'tag': 'div', 'class_': lambda x: x and any(c in x for c in ['kcm-read-text', 'read-text'])},
             {'tag': 'div', 'class_': lambda x: x and ('article' in x.lower() or 'content' in x.lower())},
             {'tag': 'article'},
             {'tag': 'div', 'itemprop': 'articleBody'},
@@ -160,7 +179,7 @@ class NewsArticleScraper:
             author = self.extract_author(soup)
             
             # Extract content
-            content = self.extract_main_content(soup)
+            content = self.extract_main_content(soup, url)
             
             # Prepare the result
             article_data = {
@@ -181,9 +200,9 @@ class NewsArticleScraper:
 if __name__ == "__main__":
     # List of articles to scrape
     urls = [
-        "https://www.kompas.id/artikel/dua-jenis-bakteri-dalam-paket-mbg-di-ntt-badan-gizi-nasional-minta-maaf?open_from=Tagar_Page",
-        "https://www.kompas.id/artikel/guru-perlu-dibekali-keterampilan-keamanan-siber",  # Add more URLs here
-        # Add as many URLs as you want
+        "https://www.metrotvnews.com/play/NnjCew9y-janjinya-19-juta-lapangan-kerja-tapi-di-manaf",
+        "https://www.metrotvnews.com/read/2025/08/10/your-article",  # Replace with actual Metro TV article
+        # Add more URLs as needed
     ]
     
     scraper = NewsArticleScraper()
