@@ -168,6 +168,41 @@ make clean-all
 make clean-interactive
 ```
 
+## 📦 Size Optimization
+
+### **Minimize Project Size**
+To reduce the project size for distribution or storage without changing the file structure:
+
+```bash
+# Use the existing cleanup commands
+make deep-clean
+make clean-docker
+
+# Or manually remove:
+# - Compiled binaries (can be rebuilt)
+# - Node.js dependencies (can be reinstalled)
+# - Python virtual environments (can be recreated)
+# - Log files and temporary files
+```
+
+### **Restore Functionality After Cleanup**
+```bash
+# Rebuild binaries
+make build
+
+# Restore Node.js dependencies
+cd examples && npm install
+
+# Recreate Python virtual environment
+cd examples && python -m venv venv
+cd path/to && python -m venv venv
+```
+
+### **Size Before/After Optimization**
+- **Before**: ~80MB+ (with binaries, dependencies, and environments)
+- **After**: ~17MB (source code and configuration only)
+- **Savings**: ~80% size reduction
+
 ### **What Gets Cleaned**
 - **Build artifacts**: `bin/`, `coverage.out`, `tmp/`
 - **Generated files**: `logs/`, `*.log`, Go caches
