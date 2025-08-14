@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Ollama service for running Llama models
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - llama-network
+
+  # PostgreSQL database (optional)
+  postgres:
+    image: postgres:15-alpine
+    container_name: llama_postgres
+    environment:
+      POSTGRES_DB: llama_api
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - llama-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: llama_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - llama-network
+
+  # API service
+  api:
+    build: .
+    container_name: llama_api
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - LLAMA_BASE_URL=http://ollama:11434
+      - LLAMA_DEFAULT_MODEL=llama2
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password123
+      - DB_NAME=llama_api
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - ollama
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - llama-network
+
+volumes:
+  ollama_data:
+  postgres_data:
+
+networks:
+  llama-network:
+    driver: bridge

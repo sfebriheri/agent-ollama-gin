@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llama API Web Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .api-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .api-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f1f3f4;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .response h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .response pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #e53e3e;
+            background: #fed7d7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .success {
+            color: #38a169;
+            background: #c6f6d5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: #f8f9fa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦙 Llama API</h1>
+            <p>Interactive Web Interface for Testing Llama LLM API</p>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('chat')">Chat</div>
+                <div class="tab" onclick="showTab('completion')">Completion</div>
+                <div class="tab" onclick="showTab('embedding')">Embedding</div>
+                <div class="tab" onclick="showTab('models')">Models</div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-content active">
+                <div class="api-section">
+                    <h2>💬 Chat Completion</h2>
+                    <div class="form-group">
+                        <label for="chatModel">Model:</label>
+                        <select id="chatModel">
+                            <option value="llama2">llama2</option>
+                            <option value="llama2:7b">llama2:7b</option>
+                            <option value="llama2:13b">llama2:13b</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="chatMessages">Messages:</label>
+                        <textarea id="chatMessages" rows="4" placeholder='[{"role": "user", "content": "Hello! How are you?"}]'></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="chatTemperature">Temperature:</label>
+                        <input type="number" id="chatTemperature" value="0.7" min="0" max="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="chatMaxTokens">Max Tokens:</label>
+                        <input type="number" id="chatMaxTokens" value="100" min="1" max="1000">
+                    </div>
+                    <button class="btn" onclick="sendChat()">Send Chat Request</button>
+                    
+                    <div class="loading" id="chatLoading">
+                        <div class="spinner"></div>
+                        <p>Processing chat request...</p>
+                    </div>
+                    
+                    <div class="response" id="chatResponse" style="display: none;">
+                        <h3>Response:</h3>
+                        <pre id="chatResponseContent"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completion Tab -->
+            <div id="completion" class="tab-content">
+                <div class="api-section">
+                    <h2>✍️ Text Completion</h2>
+                    <div class="form-group">
+                        <label for="completionModel">Model:</label>
+                        <select id="completionModel">
+                            <option value="llama2">llama2</option>
+                            <option value="llama2:7b">llama2:7b</option>
+                            <option value="llama2:13b">llama2:13b</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="completionPrompt">Prompt:</label>
+                        <textarea id="completionPrompt" rows="4" placeholder="The future of artificial intelligence is..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="completionTemperature">Temperature:</label>
+                        <input type="number" id="completionTemperature" value="0.8" min="0" max="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="completionMaxTokens">Max Tokens:</label>
+                        <input type="number" id="completionMaxTokens" value="50" min="1" max="500">
+                    </div>
+                    <button class="btn" onclick="sendCompletion()">Send Completion Request</button>
+                    
+                    <div class="loading" id="completionLoading">
+                        <div class="spinner"></div>
+                        <p>Processing completion request...</p>
+                    </div>
+                    
+                    <div class="response" id="completionResponse" style="display: none;">
+                        <h3>Response:</h3>
+                        <pre id="completionResponseContent"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Embedding Tab -->
+            <div id="embedding" class="tab-content">
+                <div class="api-section">
+                    <h2>🔍 Text Embedding</h2>
+                    <div class="form-group">
+                        <label for="embeddingModel">Model:</label>
+                        <select id="embeddingModel">
+                            <option value="llama2">llama2</option>
+                            <option value="llama2:7b">llama2:7b</option>
+                            <option value="llama2:13b">llama2:13b</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="embeddingInput">Input Text:</label>
+                        <textarea id="embeddingInput" rows="4" placeholder="Enter text to generate embeddings for..."></textarea>
+                    </div>
+                    <button class="btn" onclick="sendEmbedding()">Generate Embedding</button>
+                    
+                    <div class="loading" id="embeddingLoading">
+                        <div class="spinner"></div>
+                        <p>Generating embedding...</p>
+                    </div>
+                    
+                    <div class="response" id="embeddingResponse" style="display: none;">
+                        <h3>Response:</h3>
+                        <pre id="embeddingResponseContent"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Models Tab -->
+            <div id="models" class="tab-content">
+                <div class="api-section">
+                    <h2>📚 Available Models</h2>
+                    <button class="btn" onclick="listModels()">List Models</button>
+                    
+                    <div class="loading" id="modelsLoading">
+                        <div class="spinner"></div>
+                        <p>Fetching models...</p>
+                    </div>
+                    
+                    <div class="response" id="modelsResponse" style="display: none;">
+                        <h3>Available Models:</h3>
+                        <pre id="modelsResponseContent"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/v1';
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+        }
+
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                throw new Error(`Request failed: ${error.message}`);
+            }
+        }
+
+        async function sendChat() {
+            const loading = document.getElementById('chatLoading');
+            const response = document.getElementById('chatResponse');
+            const content = document.getElementById('chatResponseContent');
+            
+            try {
+                loading.style.display = 'block';
+                response.style.display = 'none';
+                
+                const messages = JSON.parse(document.getElementById('chatMessages').value);
+                const model = document.getElementById('chatModel').value;
+                const temperature = parseFloat(document.getElementById('chatTemperature').value);
+                const maxTokens = parseInt(document.getElementById('chatMaxTokens').value);
+                
+                const data = {
+                    messages,
+                    model,
+                    temperature,
+                    max_tokens: maxTokens
+                };
+                
+                const result = await makeRequest('/llama/chat', 'POST', data);
+                content.textContent = JSON.stringify(result, null, 2);
+                response.style.display = 'block';
+                
+            } catch (error) {
+                content.textContent = `Error: ${error.message}`;
+                response.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function sendCompletion() {
+            const loading = document.getElementById('completionLoading');
+            const response = document.getElementById('completionResponse');
+            const content = document.getElementById('completionResponseContent');
+            
+            try {
+                loading.style.display = 'block';
+                response.style.display = 'none';
+                
+                const prompt = document.getElementById('completionPrompt').value;
+                const model = document.getElementById('completionModel').value;
+                const temperature = parseFloat(document.getElementById('completionTemperature').value);
+                const maxTokens = parseInt(document.getElementById('completionMaxTokens').value);
+                
+                const data = {
+                    prompt,
+                    model,
+                    temperature,
+                    max_tokens: maxTokens
+                };
+                
+                const result = await makeRequest('/llama/completion', 'POST', data);
+                content.textContent = JSON.stringify(result, null, 2);
+                response.style.display = 'block';
+                
+            } catch (error) {
+                content.textContent = `Error: ${error.message}`;
+                response.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function sendEmbedding() {
+            const loading = document.getElementById('embeddingLoading');
+            const response = document.getElementById('embeddingResponse');
+            const content = document.getElementById('embeddingResponseContent');
+            
+            try {
+                loading.style.display = 'block';
+                response.style.display = 'none';
+                
+                const input = document.getElementById('embeddingInput').value;
+                const model = document.getElementById('embeddingModel').value;
+                
+                const data = {
+                    input,
+                    model
+                };
+                
+                const result = await makeRequest('/llama/embedding', 'POST', data);
+                content.textContent = JSON.stringify(result, null, 2);
+                response.style.display = 'block';
+                
+            } catch (error) {
+                content.textContent = `Error: ${error.message}`;
+                response.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function listModels() {
+            const loading = document.getElementById('modelsLoading');
+            const response = document.getElementById('modelsResponse');
+            const content = document.getElementById('modelsResponseContent');
+            
+            try {
+                loading.style.display = 'block';
+                response.style.display = 'none';
+                
+                const result = await makeRequest('/llama/models');
+                content.textContent = JSON.stringify(result, null, 2);
+                response.style.display = 'block';
+                
+            } catch (error) {
+                content.textContent = `Error: ${error.message}`;
+                response.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Set default values
+        document.getElementById('chatMessages').value = '[{"role": "user", "content": "Hello! Can you tell me a short joke?"}]';
+        document.getElementById('completionPrompt').value = 'The future of artificial intelligence is';
+        document.getElementById('embeddingInput').value = 'This is a sample text for embedding generation';
+    </script>
+</body>
+</html>
