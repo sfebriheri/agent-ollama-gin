@@ -29,11 +29,19 @@ func NewLlamaService() *LlamaService {
 
 	apiKey := os.Getenv("LLAMA_API_KEY")
 
+	// Get timeout from environment or use default
+	timeout := 60 * time.Second
+	if timeoutStr := os.Getenv("LLAMA_TIMEOUT"); timeoutStr != "" {
+		if timeoutSec, err := strconv.Atoi(timeoutStr); err == nil {
+			timeout = time.Duration(timeoutSec) * time.Second
+		}
+	}
+
 	return &LlamaService{
 		baseURL: baseURL,
 		apiKey:  apiKey,
 		httpClient: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: timeout,
 		},
 	}
 }
@@ -144,7 +152,7 @@ func (s *LlamaService) Completion(request models.CompletionRequest) (*models.Com
 func (s *LlamaService) Embedding(request models.EmbeddingRequest) (*models.EmbeddingResponse, error) {
 	// Convert to Ollama format
 	ollamaRequest := map[string]interface{}{
-		"model": s.getModel(request.Model),
+		"model":  s.getModel(request.Model),
 		"prompt": request.Input,
 	}
 
