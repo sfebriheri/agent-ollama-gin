@@ -1,45 +1,68 @@
 package services
 
 import (
-	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
+	"sync"
 	"time"
 
 	"llama-api/models"
 )
 
-type LlamaService struct {
+// OptimizedLlamaService provides better performance and memory management
+type OptimizedLlamaService struct {
 	baseURL    string
 	apiKey     string
 	httpClient *http.Client
+	modelCache map[string]bool
+	cacheMutex sync.RWMutex
 }
 
-func NewLlamaService() *LlamaService {
+// NewOptimizedLlamaService creates an optimized service instance
+func NewOptimizedLlamaService() *OptimizedLlamaService {
 	baseURL := os.Getenv("LLAMA_BASE_URL")
 	if baseURL == "" {
-		baseURL = "http://localhost:11434" // Default Ollama endpoint
+		baseURL = "http://localhost:11434"
 	}
 
 	apiKey := os.Getenv("LLAMA_API_KEY")
 
-	return &LlamaService{
+	// Get timeout from environment or use default
+	timeout := 120 * time.Second
+	if timeoutStr := os.Getenv("LLAMA_TIMEOUT"); timeoutStr != "" {
+		if timeoutSec, err := strconv.Atoi(timeoutStr); err == nil {
+			timeout = time.Duration(timeoutSec) * time.Second
+		}
+	}
+
+	return &OptimizedLlamaService{
 		baseURL: baseURL,
 		apiKey:  apiKey,
 		httpClient: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: timeout,
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 10,
+				IdleConnTimeout:     90 * time.Second,
+			},
 		},
+		modelCache: make(map[string]bool),
 	}
 }
 
-// Chat handles chat completion using Llama
-func (s *LlamaService) Chat(request models.ChatRequest) (*models.ChatResponse, error) {
+// Chat handles chat completion with optimized memory usage
+func (s *OptimizedLlamaService) Chat(request models.ChatRequest) (*models.ChatResponse, error) {
+	// Validate model availability
+	if !s.isModelAvailable(request.Model) {
+		return nil, fmt.Errorf("model %s not available", request.Model)
+	}
+
 	// Convert to Ollama format
 	ollamaRequest := map[string]interface{}{
 		"model":    s.getModel(request.Model),
@@ -51,14 +74,17 @@ func (s *LlamaService) Chat(request models.ChatRequest) (*models.ChatResponse, e
 		ollamaRequest["temperature"] = request.Temperature
 	}
 
-	// Make request to Ollama
-	resp, err := s.makeRequest("POST", "/api/chat", ollamaRequest)
+	// Make request with context for better timeout handling
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	resp, err := s.makeRequestWithContext(ctx, "POST", "/api/chat", ollamaRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make chat request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Parse Ollama response
+	// Parse response with memory-efficient streaming
 	var ollamaResp map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&ollamaResp); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
@@ -89,9 +115,13 @@ func (s *LlamaService) Chat(request models.ChatRequest) (*models.ChatResponse, e
 	return response, nil
 }
 
-// Completion handles text completion using Llama
-func (s *LlamaService) Completion(request models.CompletionRequest) (*models.CompletionResponse, error) {
-	// Convert to Ollama format
+// Completion handles text completion with optimization
+func (s *OptimizedLlamaService) Completion(request models.CompletionRequest) (*models.CompletionResponse, error) {
+	// Validate model availability
+	if !s.isModelAvailable(request.Model) {
+		return nil, fmt.Errorf("model %s not available", request.Model)
+	}
+
 	ollamaRequest := map[string]interface{}{
 		"model":  s.getModel(request.Model),
 		"prompt": request.Prompt,
@@ -102,20 +132,20 @@ func (s *LlamaService) Completion(request models.CompletionRequest) (*models.Com
 		ollamaRequest["temperature"] = request.Temperature
 	}
 
-	// Make request to Ollama
-	resp, err := s.makeRequest("POST", "/api/generate", ollamaRequest)
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	resp, err := s.makeRequestWithContext(ctx, "POST", "/api/generate", ollamaRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make completion request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Parse Ollama response
 	var ollamaResp map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&ollamaResp); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Convert to our format
 	response := &models.CompletionResponse{
 		ID:      generateID(),
 		Object:  "text_completion",
@@ -140,28 +170,27 @@ func (s *LlamaService) Completion(request models.CompletionRequest) (*models.Com
 	return response, nil
 }
 
-// Embedding handles text embedding using Llama
-func (s *LlamaService) Embedding(request models.EmbeddingRequest) (*models.EmbeddingResponse, error) {
-	// Convert to Ollama format
+// Embedding handles text embedding with optimization
+func (s *OptimizedLlamaService) Embedding(request models.EmbeddingRequest) (*models.EmbeddingResponse, error) {
 	ollamaRequest := map[string]interface{}{
 		"model":  s.getModel(request.Model),
 		"prompt": request.Input,
 	}
 
-	// Make request to Ollama
-	resp, err := s.makeRequest("POST", "/api/embeddings", ollamaRequest)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	resp, err := s.makeRequestWithContext(ctx, "POST", "/api/embeddings", ollamaRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make embedding request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Parse Ollama response
 	var ollamaResp map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&ollamaResp); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Convert to our format
 	embedding := models.Embedding{
 		Object:    "embedding",
 		Index:     0,
@@ -181,8 +210,8 @@ func (s *LlamaService) Embedding(request models.EmbeddingRequest) (*models.Embed
 	return response, nil
 }
 
-// ListModels returns available models
-func (s *LlamaService) ListModels() ([]models.Model, error) {
+// ListModels returns available models with caching
+func (s *OptimizedLlamaService) ListModels() ([]models.Model, error) {
 	resp, err := s.makeRequest("GET", "/api/tags", nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list models: %w", err)
@@ -198,62 +227,28 @@ func (s *LlamaService) ListModels() ([]models.Model, error) {
 	if modelsData, ok := ollamaResp["models"].([]interface{}); ok {
 		for _, modelData := range modelsData {
 			model := modelData.(map[string]interface{})
+			modelName := model["name"].(string)
 			modelList = append(modelList, models.Model{
-				ID:      model["name"].(string),
+				ID:      modelName,
 				Object:  "model",
 				Created: time.Now().Unix(),
 				OwnedBy: "ollama",
 			})
+
+			// Cache model availability
+			s.cacheModel(modelName)
 		}
 	}
 
 	return modelList, nil
 }
 
-// StreamChat handles streaming chat responses
-func (s *LlamaService) StreamChat(request models.ChatRequest, responseChan chan<- string) {
-	defer close(responseChan)
-
-	// Convert to Ollama format
-	ollamaRequest := map[string]interface{}{
-		"model":    s.getModel(request.Model),
-		"messages": request.Messages,
-		"stream":   true,
-	}
-
-	if request.Temperature > 0 {
-		ollamaRequest["temperature"] = request.Temperature
-	}
-
-	// Make streaming request to Ollama
-	resp, err := s.makeRequest("POST", "/api/chat", ollamaRequest)
-	if err != nil {
-		responseChan <- fmt.Sprintf("Error: %v", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Stream the response
-	reader := bufio.NewReader(resp.Body)
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			responseChan <- fmt.Sprintf("Error reading stream: %v", err)
-			break
-		}
-
-		// Parse the line and send to channel
-		if line = strings.TrimSpace(line); line != "" {
-			responseChan <- line
-		}
-	}
+// Helper methods
+func (s *OptimizedLlamaService) makeRequest(method, endpoint string, body interface{}) (*http.Response, error) {
+	return s.makeRequestWithContext(context.Background(), method, endpoint, body)
 }
 
-// Helper methods
-func (s *LlamaService) makeRequest(method, endpoint string, body interface{}) (*http.Response, error) {
+func (s *OptimizedLlamaService) makeRequestWithContext(ctx context.Context, method, endpoint string, body interface{}) (*http.Response, error) {
 	var reqBody io.Reader
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
@@ -263,7 +258,7 @@ func (s *LlamaService) makeRequest(method, endpoint string, body interface{}) (*
 		reqBody = bytes.NewBuffer(jsonBody)
 	}
 
-	req, err := http.NewRequest(method, s.baseURL+endpoint, reqBody)
+	req, err := http.NewRequestWithContext(ctx, method, s.baseURL+endpoint, reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -276,13 +271,26 @@ func (s *LlamaService) makeRequest(method, endpoint string, body interface{}) (*
 	return s.httpClient.Do(req)
 }
 
-func (s *LlamaService) getModel(requestedModel string) string {
+func (s *OptimizedLlamaService) getModel(requestedModel string) string {
 	if requestedModel != "" {
 		return requestedModel
 	}
 	return os.Getenv("LLAMA_DEFAULT_MODEL")
 }
 
+func (s *OptimizedLlamaService) isModelAvailable(modelName string) bool {
+	s.cacheMutex.RLock()
+	defer s.cacheMutex.RUnlock()
+	return s.modelCache[modelName]
+}
+
+func (s *OptimizedLlamaService) cacheModel(modelName string) {
+	s.cacheMutex.Lock()
+	defer s.cacheMutex.Unlock()
+	s.modelCache[modelName] = true
+}
+
+// Helper functions
 func generateID() string {
 	return "chatcmpl-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 }
