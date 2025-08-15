@@ -4,6 +4,7 @@
 help:
 	@echo "Available commands:"
 	@echo "  build         - Build the Go application"
+	@echo "  build-cli     - Build the encyclopedia CLI"
 	@echo "  run           - Run the application locally"
 	@echo "  test          - Run tests"
 	@echo "  clean         - Clean build artifacts"
@@ -22,6 +23,10 @@ install-deps:
 # Build the application
 build: install-deps
 	go build -o bin/llama-api main.go
+
+# Build the encyclopedia CLI
+build-cli: install-deps
+	go build -o bin/encyclopedia cmd/encyclopedia/main.go
 
 # Run locally
 run: install-deps

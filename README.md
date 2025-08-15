@@ -10,6 +10,9 @@ A high-performance REST API for Llama Large Language Models built with Go and th
 - ✍️ **Text Completion**: Generate text completions
 - 🔍 **Embeddings**: Generate text embeddings for semantic search
 - 📡 **Streaming Support**: Real-time streaming responses
+- 🔍 **Encyclopedia Agent**: AI-powered encyclopedia search and content generation
+- 💻 **CLI Interface**: Command-line tool for encyclopedia access
+- 🌐 **Web Interface**: Modern, responsive web interface
 - 🐳 **Docker Ready**: Complete containerized setup
 - 🔧 **Configurable**: Environment-based configuration
 - 📊 **Health Monitoring**: Built-in health checks
@@ -676,12 +679,44 @@ make clean
 | `./llama-api.sh` | Interactive development menu |
 | `./llama-api.sh` | Interactive cleaning menu |
 | `make help` | Show all commands |
+| `make build-cli` | Build encyclopedia CLI |
 | `make watch` | Hot reloading development |
 | `make status` | Environment status |
 | `make health-check` | Service health check |
 | `make clean` | Basic cleaning |
 | `make deep-clean` | Deep cleaning |
 | `make clean-all` | Complete cleanup |
+
+## 🔍 Encyclopedia Agent CLI
+
+The project now includes a powerful command-line interface for encyclopedia access:
+
+### **Quick CLI Start**
+```bash
+# Build the CLI
+make build-cli
+
+# Interactive mode
+./bin/encyclopedia
+
+# Command line usage
+./bin/encyclopedia search "artificial intelligence"
+./bin/encyclopedia article "Machine Learning"
+./bin/encyclopedia prompt "neural networks"
+```
+
+### **CLI Features**
+- 🔍 **Search**: Multi-source encyclopedia search
+- 📖 **Articles**: Retrieve full articles with custom length
+- ✍️ **Prompts**: AI-generated encyclopedia-style prompts
+- 🌍 **Multi-language**: Support for 10+ languages
+- 💻 **Interactive**: Command-line interface with help system
+- 🔗 **Integration**: Easy to use in scripts and automation
+
+### **CLI Documentation**
+- **Usage Guide**: `CLI_USAGE.md`
+- **Demo Script**: `./demo_cli.sh`
+- **Help**: `./bin/encyclopedia help`
 
 ## 🆘 Need Help?
 
