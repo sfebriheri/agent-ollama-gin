@@ -3,9 +3,11 @@ package handlers
 import (
 	"net/http"
 
+	"agent-ollama-gin/models"
+
 	"github.com/gin-gonic/gin"
-	"llama-api/models"
-	"llama-api/services"
+
+	"agent-ollama-gin/services"
 )
 
 type LlamaHandler struct {
@@ -23,7 +25,7 @@ func (h *LlamaHandler) Chat(c *gin.Context) {
 	var request models.ChatRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request format",
+			"error":   "Invalid request format",
 			"details": err.Error(),
 		})
 		return
@@ -40,7 +42,7 @@ func (h *LlamaHandler) Chat(c *gin.Context) {
 	response, err := h.llamaService.Chat(request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to process chat request",
+			"error":   "Failed to process chat request",
 			"details": err.Error(),
 		})
 		return
@@ -54,7 +56,7 @@ func (h *LlamaHandler) Completion(c *gin.Context) {
 	var request models.CompletionRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request format",
+			"error":   "Invalid request format",
 			"details": err.Error(),
 		})
 		return
@@ -71,7 +73,7 @@ func (h *LlamaHandler) Completion(c *gin.Context) {
 	response, err := h.llamaService.Completion(request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to process completion request",
+			"error":   "Failed to process completion request",
 			"details": err.Error(),
 		})
 		return
@@ -85,7 +87,7 @@ func (h *LlamaHandler) Embedding(c *gin.Context) {
 	var request models.EmbeddingRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request format",
+			"error":   "Invalid request format",
 			"details": err.Error(),
 		})
 		return
@@ -102,7 +104,7 @@ func (h *LlamaHandler) Embedding(c *gin.Context) {
 	response, err := h.llamaService.Embedding(request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to process embedding request",
+			"error":   "Failed to process embedding request",
 			"details": err.Error(),
 		})
 		return
@@ -116,7 +118,7 @@ func (h *LlamaHandler) ListModels(c *gin.Context) {
 	models, err := h.llamaService.ListModels()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve models",
+			"error":   "Failed to retrieve models",
 			"details": err.Error(),
 		})
 		return
@@ -132,7 +134,7 @@ func (h *LlamaHandler) StreamChat(c *gin.Context) {
 	var request models.ChatRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request format",
+			"error":   "Invalid request format",
 			"details": err.Error(),
 		})
 		return
@@ -146,7 +148,7 @@ func (h *LlamaHandler) StreamChat(c *gin.Context) {
 
 	// Create a channel for streaming responses
 	responseChan := make(chan string)
-	
+
 	go func() {
 		defer close(responseChan)
 		h.llamaService.StreamChat(request, responseChan)

@@ -835,7 +835,7 @@ rebuild_docker_services() {
 install_dev_tools() {
     print_header "Installing development tools..."
     
-    go install github.com/cosmtrek/air@latest
+    go install github.com/air-verse/air@latest
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
     
     print_success "Development tools installed"

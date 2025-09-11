@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"llama-api/models"
+	"agent-ollama-gin/models"
 )
 
 type LlamaService struct {

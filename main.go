@@ -4,11 +4,12 @@ import (
 	"log"
 	"os"
 
+	"agent-ollama-gin/handlers"
+	"agent-ollama-gin/services"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"llama-api/handlers"
-	"llama-api/services"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 
 	// Initialize services
 	llamaService := services.NewLlamaService()
-	
+
 	// Initialize handlers
 	llamaHandler := handlers.NewLlamaHandler(llamaService)
 
@@ -39,11 +40,11 @@ func main() {
 			"message": "Welcome to Llama API",
 			"version": "1.0.0",
 			"endpoints": gin.H{
-				"health": "/api/v1/health",
-				"chat": "/api/v1/llama/chat",
+				"health":     "/api/v1/health",
+				"chat":       "/api/v1/llama/chat",
 				"completion": "/api/v1/llama/completion",
-				"embedding": "/api/v1/llama/embedding",
-				"models": "/api/v1/llama/models",
+				"embedding":  "/api/v1/llama/embedding",
+				"models":     "/api/v1/llama/models",
 			},
 			"docs": "Check README.md for full API documentation",
 		})
