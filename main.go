@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
 	"agent-ollama-gin/handlers"
 	"agent-ollama-gin/services"
 
+	"github.com/firebase/genkit/go/ai"
+	"github.com/firebase/genkit/go/genkit"
+	"github.com/firebase/genkit/go/plugins/googlegenai"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"google.golang.org/genai"
 )
 
 func main() {
@@ -17,6 +22,13 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
+
+	// Initialize Genkit context
+	ctx := context.Background()
+	g := genkit.Init(ctx, genkit.WithPlugins(&googlegenai.GoogleAI{}))
+
+	// Define Genkit flows
+	defineGenkitFlows(g, ctx)
 
 	// Initialize services
 	llamaService := services.NewLlamaService()
@@ -70,6 +82,8 @@ func main() {
 			llama.POST("/embedding", llamaHandler.Embedding)
 			llama.GET("/models", llamaHandler.ListModels)
 		}
+
+
 	}
 
 	// Get port from environment or use default
@@ -79,7 +93,91 @@ func main() {
 	}
 
 	log.Printf("Starting Llama API server on port %s", port)
+	
+	// Start the server
 	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
+}
+
+// defineGenkitFlows defines Genkit flows for AI operations
+func defineGenkitFlows(g *genkit.Genkit, ctx context.Context) {
+	// Basic text generation flow
+	genkit.DefineFlow(g, "basicInferenceFlow",
+		func(ctx context.Context, topic string) (string, error) {
+			response, err := genkit.Generate(ctx, g,
+				ai.WithModelName("googleai/gemini-2.5-flash"),
+				ai.WithPrompt("Write a short, creative paragraph about %s.", topic),
+				ai.WithConfig(&genai.GenerateContentConfig{
+					Temperature: genai.Ptr[float32](0.8),
+				}),
+			)
+			if err != nil {
+				return "", err
+			}
+			return response.Text(), nil
+		},
+	)
+
+	// Chat completion flow
+	genkit.DefineFlow(g, "chatCompletionFlow",
+		func(ctx context.Context, input struct {
+			Messages []map[string]string `json:"messages"`
+			Model    string              `json:"model,omitempty"`
+		}) (string, error) {
+			model := input.Model
+			if model == "" {
+				model = "googleai/gemini-2.5-flash"
+			}
+
+			// Convert messages to prompt
+			prompt := ""
+			for _, msg := range input.Messages {
+				prompt += msg["role"] + ": " + msg["content"] + "\n"
+			}
+
+			response, err := genkit.Generate(ctx, g,
+				ai.WithModelName(model),
+				ai.WithPrompt(prompt),
+				ai.WithConfig(&genai.GenerateContentConfig{
+					Temperature: genai.Ptr[float32](0.7),
+				}),
+			)
+			if err != nil {
+				return "", err
+			}
+			return response.Text(), nil
+		},
+	)
+
+	// Text completion flow
+	genkit.DefineFlow(g, "textCompletionFlow",
+		func(ctx context.Context, input struct {
+			Prompt      string  `json:"prompt"`
+			Model       string  `json:"model,omitempty"`
+			Temperature float32 `json:"temperature,omitempty"`
+		}) (string, error) {
+			model := input.Model
+			if model == "" {
+				model = "googleai/gemini-2.5-flash"
+			}
+
+			temperature := input.Temperature
+			if temperature == 0 {
+				temperature = 0.7
+			}
+
+			response, err := genkit.Generate(ctx, g,
+				ai.WithModelName(model),
+				ai.WithPrompt(input.Prompt),
+				ai.WithConfig(&genai.GenerateContentConfig{
+					Temperature: genai.Ptr[float32](temperature),
+				}),
+			)
+			if err != nil {
+				return "", err
+			}
+			return response.Text(), nil
+		},
+	)
 }
