@@ -19,12 +19,12 @@ type ChatRequest struct {
 
 // ChatResponse represents a chat completion response
 type ChatResponse struct {
-	ID      string    `json:"id"`
-	Object  string    `json:"object"`
-	Created int64     `json:"created"`
-	Model   string    `json:"model"`
-	Choices []Choice  `json:"choices"`
-	Usage   Usage     `json:"usage"`
+	ID      string   `json:"id"`
+	Object  string   `json:"object"`
+	Created int64    `json:"created"`
+	Model   string   `json:"model"`
+	Choices []Choice `json:"choices"`
+	Usage   Usage    `json:"usage"`
 }
 
 // Choice represents a completion choice
@@ -52,12 +52,12 @@ type CompletionRequest struct {
 
 // CompletionResponse represents a text completion response
 type CompletionResponse struct {
-	ID      string    `json:"id"`
-	Object  string    `json:"object"`
-	Created int64     `json:"created"`
-	Model   string    `json:"model"`
-	Choices []Choice  `json:"choices"`
-	Usage   Usage     `json:"usage"`
+	ID      string   `json:"id"`
+	Object  string   `json:"object"`
+	Created int64    `json:"created"`
+	Model   string   `json:"model"`
+	Choices []Choice `json:"choices"`
+	Usage   Usage    `json:"usage"`
 }
 
 // EmbeddingRequest represents an embedding request
@@ -83,10 +83,35 @@ type Embedding struct {
 
 // Model represents a Llama model
 type Model struct {
-	ID      string    `json:"id"`
-	Object  string    `json:"object"`
-	Created int64     `json:"created"`
-	OwnedBy string    `json:"owned_by"`
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Created int64  `json:"created"`
+	OwnedBy string `json:"owned_by"`
+	IsCloud bool   `json:"is_cloud,omitempty"`
+	Size    string `json:"size,omitempty"`
+}
+
+// CloudModel represents available Ollama cloud models
+type CloudModel struct {
+	Name        string `json:"name"`
+	ID          string `json:"id"`
+	Size        string `json:"size"`
+	Description string `json:"description"`
+	Available   bool   `json:"available"`
+}
+
+// AuthRequest represents authentication request for Ollama cloud
+type AuthRequest struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+	Token    string `json:"token,omitempty"`
+}
+
+// AuthResponse represents authentication response
+type AuthResponse struct {
+	Success bool   `json:"success"`
+	Token   string `json:"token,omitempty"`
+	Message string `json:"message"`
 }
 
 // ErrorResponse represents an error response
@@ -98,11 +123,11 @@ type ErrorResponse struct {
 
 // StreamResponse represents a streaming response chunk
 type StreamResponse struct {
-	ID      string    `json:"id"`
-	Object  string    `json:"object"`
-	Created int64     `json:"created"`
-	Model   string    `json:"model"`
-	Choices []Choice  `json:"choices"`
+	ID      string   `json:"id"`
+	Object  string   `json:"object"`
+	Created int64    `json:"created"`
+	Model   string   `json:"model"`
+	Choices []Choice `json:"choices"`
 }
 
 // HealthResponse represents a health check response

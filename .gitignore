@@ -106,3 +106,72 @@ cache/
 # Test artifacts
 test-results/
 test-output/
+
+# Ollama specific
+ollama/
+.ollama/
+models/
+*.gguf
+*.bin
+
+# Firebase Genkit
+.genkit/
+genkit.config.js
+genkit.config.ts
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# API Keys and Secrets (additional security)
+*.key
+*.pem
+*.crt
+secrets/
+credentials/
+.secrets
+.credentials
+
+# Runtime and process files
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and profiling
+*.prof
+*.trace
+profile.out
+mem.prof
+cpu.prof
+
+# Compiled binary (project specific)
+agent-ollama-gin
+agent-ollama-gin.exe
+
+# Development tools
+.air.toml.bak
+.golangci.yml.bak
+
+# Cloud provider configs
+.aws/
+.gcp/
+.azure/
+
+# Monitoring and metrics
+metrics/
+monitoring/
+*.metrics
+
+# Documentation build artifacts
+docs/_build/
+docs/site/
+
+# Terraform (if used for infrastructure)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes (if used for deployment)
+*.kubeconfig
+kube-config
+k8s-secrets/
