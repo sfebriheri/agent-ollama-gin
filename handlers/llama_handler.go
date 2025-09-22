@@ -150,7 +150,6 @@ func (h *LlamaHandler) StreamChat(c *gin.Context) {
 	responseChan := make(chan string)
 
 	go func() {
-		defer close(responseChan)
 		h.llamaService.StreamChat(request, responseChan)
 	}()
 
@@ -159,4 +158,88 @@ func (h *LlamaHandler) StreamChat(c *gin.Context) {
 		c.SSEvent("message", response)
 		c.Writer.Flush()
 	}
+}
+
+// SignIn handles Ollama cloud authentication
+func (h *LlamaHandler) SignIn(c *gin.Context) {
+	var request models.AuthRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request format",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Validate request
+	if request.Username == "" || request.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Username and password are required",
+		})
+		return
+	}
+
+	response, err := h.llamaService.SignIn(request.Username, request.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to sign in",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	if !response.Success {
+		c.JSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// SignOut handles Ollama cloud sign out
+func (h *LlamaHandler) SignOut(c *gin.Context) {
+	err := h.llamaService.SignOut()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to sign out",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successfully signed out",
+	})
+}
+
+// PullModel handles model pulling (local or cloud)
+func (h *LlamaHandler) PullModel(c *gin.Context) {
+	modelName := c.Param("model")
+	if modelName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Model name is required",
+		})
+		return
+	}
+
+	err := h.llamaService.PullModel(modelName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to pull model",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Model pulled successfully",
+		"model":   modelName,
+	})
+}
+
+// ListCloudModels returns available cloud models
+func (h *LlamaHandler) ListCloudModels(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"models": services.CloudModels,
+	})
 }

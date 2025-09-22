@@ -1,251 +1,306 @@
-# Agent Ollama Gin
+# Agent Ollama Gin - Ollama Cloud Integration
 
-A Go-based AI agent application built with Gin framework and integrated with Ollama for local LLM capabilities.
+A powerful REST API service built with Go and Gin framework that provides seamless integration with Ollama cloud models. This service has been migrated from Genkit to support Ollama's cloud infrastructure for enhanced AI model access.
 
-## Features
+## 🚀 Features
 
-- 🚀 Fast HTTP server with Gin framework
-- 🤖 Local LLM integration with Ollama
-- 🔥 Hot reload development with Air
-- 🛠️ AI development toolkit with Firebase Genkit
-- 📝 RESTful API design
-- 🔄 Real-time capabilities
+- **Ollama Cloud Integration**: Full support for Ollama cloud models and authentication
+- **Local & Cloud Models**: Seamlessly switch between local Ollama and cloud-hosted models
+- **Chat Completions**: Interactive chat with AI models
+- **Text Completions**: Generate text completions from prompts
+- **Embeddings**: Generate vector embeddings for text
+- **Streaming Responses**: Real-time streaming for chat and completions
+- **Model Management**: List, pull, and manage both local and cloud models
+- **Authentication**: Secure sign-in/sign-out for Ollama cloud services
 
-## Prerequisites
+## 📋 Prerequisites
 
-- [Go 1.21+](https://golang.org/doc/install)
-- [Ollama](https://ollama.ai/) installed and running
-- [Node.js](https://nodejs.org/) (optional, for Genkit features)
+- Go 1.25.1 or higher
+- Ollama installed locally (for local models)
+- Ollama cloud account (for cloud models)
 
-## Quick Start
+## 🛠️ Installation
 
-### Automated Setup (Recommended)
-
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/sfebriheri/agent-ollama-gin.git
+git clone <repository-url>
 cd agent-ollama-gin
-
-# Run the setup script
-chmod +x setup.sh
-./setup.sh
-
-# Copy environment configuration
-cp .env.example .env
-
-# Start development server
-make watch
 ```
 
-### Manual Setup
-
-1. **Install Dependencies**
-   ```bash
-   go mod download
-   go mod tidy
-   ```
-
-2. **Install Development Tools**
-   ```bash
-   # Install Air for hot reload
-   go install github.com/air-verse/air@latest
-   
-   # Install Firebase Genkit CLI
-   curl -sL cli.genkit.dev | bash
-   ```
-
-3. **Start Ollama**
-   ```bash
-   ollama serve
-   ```
-
-4. **Run the Application**
-   ```bash
-   # Development mode with hot reload
-   make watch
-   
-   # Or run directly
-   go run main.go
-   ```
-
-## Development Commands
-
-### Using Makefile
-
+2. Install dependencies:
 ```bash
-# Build the application
-make build
-
-# Run the application
-make run
-
-# Development with hot reload
-make watch
-
-# Install all development tools
-make dev-setup
-
-# Clean build artifacts
-make clean
-
-# Run tests
-make test
+go mod tidy
 ```
 
-### Using Genkit
-
+3. Copy environment configuration:
 ```bash
-# Start Genkit development server
-genkit start
-
-# Initialize Genkit (if not done automatically)
-genkit init
-
-# Deploy with Genkit
-genkit deploy
-
-# Show Genkit help
-genkit --help
+cp env.example .env
 ```
 
-## Project Structure
-
-```
-agent-ollama-gin/
-├── main.go                 # Application entry point
-├── go.mod                  # Go module definition
-├── go.sum                  # Go dependencies
-├── Makefile                # Build and development commands
-├── setup.sh                # Automated setup script
-├── .air.toml              # Air configuration for hot reload
-├── .env.example           # Environment variables template
-├── .env                   # Environment variables (create from example)
-├── genkit.config.js       # Genkit configuration (auto-generated)
-├── bin/                   # Built binaries
-├── cmd/                   # Application commands
-├── internal/              # Private application code
-├── pkg/                   # Public packages
-├── api/                   # API handlers and routes
-├── models/                # Data models
-├── services/              # Business logic
-├── config/                # Configuration files
-├── templates/             # HTML templates (if using)
-├── static/                # Static assets
-└── docs/                  # Documentation
-```
-
-## Configuration
-
-Copy `.env.example` to `.env` and configure:
-
-```bash
+4. Configure your environment variables in `.env`:
+```env
 # Server Configuration
-SERVER_PORT=8080
-SERVER_HOST=localhost
+PORT=8080
 
 # Ollama Configuration
-OLLAMA_URL=http://localhost:11434
-OLLAMA_MODEL=llama2
+OLLAMA_HOST=http://localhost:11434
 
-# Logging
-LOG_LEVEL=info
+# Ollama Cloud Configuration
+LLAMA_CLOUD_ENABLED=true
+LLAMA_CLOUD_API_URL=https://api.ollama.com
+LLAMA_CLOUD_API_KEY=your_api_key_here
+LLAMA_SIGNED_IN=false
 ```
 
-## API Endpoints
+## 🚀 Running the Service
 
+1. Start the server:
 ```bash
-# Health check
-GET /health
-
-# Agent endpoints (example)
-POST /api/v1/chat
-GET /api/v1/models
-POST /api/v1/generate
+go run main.go
 ```
 
-## Genkit Integration
+2. The API will be available at `http://localhost:8080`
 
-This project uses [Firebase Genkit](https://firebase.google.com/docs/genkit) for AI application development:
-
-- **Flow Development**: Create and manage AI flows
-- **Model Integration**: Easy LLM model switching
-- **Development UI**: Visual development environment
-- **Deployment**: Streamlined deployment process
-
-### Genkit Features
-
-- Visual flow builder and debugger
-- Built-in evaluation and testing tools  
-- Multiple model provider support
-- Production deployment capabilities
-
-## Development Workflow
-
-1. **Start Ollama**: `ollama serve`
-2. **Start Development**: `make watch` or `genkit start`
-3. **Make Changes**: Edit code with hot reload
-4. **Test**: Run tests with `make test`
-5. **Build**: Create production build with `make build`
-
-## Docker Support (Optional)
-
-```dockerfile
-# Dockerfile example
-FROM golang:1.21-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go build -o bin/agent-ollama-gin main.go
-
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /app/bin/agent-ollama-gin .
-EXPOSE 8080
-CMD ["./agent-ollama-gin"]
+3. Check the health endpoint:
+```bash
+curl http://localhost:8080/
 ```
 
-## Contributing
+## 📚 API Endpoints
+
+### Core Endpoints
+
+#### Chat Completion
+```bash
+POST /api/v1/llama/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2:1b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello! How are you?"
+    }
+  ],
+  "stream": false
+}
+```
+
+#### Text Completion
+```bash
+POST /api/v1/llama/completion
+Content-Type: application/json
+
+{
+  "model": "llama3.2:1b",
+  "prompt": "The future of artificial intelligence is",
+  "stream": false
+}
+```
+
+#### Generate Embeddings
+```bash
+POST /api/v1/llama/embedding
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "Text to generate embeddings for"
+}
+```
+
+#### List Models
+```bash
+GET /api/v1/llama/models
+```
+
+### Streaming Endpoints
+
+#### Streaming Chat
+```bash
+POST /api/v1/llama/stream/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2:1b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tell me a story"
+    }
+  ],
+  "stream": true
+}
+```
+
+### Model Management
+
+#### Pull Model
+```bash
+POST /api/v1/llama/pull
+Content-Type: application/json
+
+{
+  "name": "llama3.2:1b"
+}
+```
+
+### Cloud Authentication
+
+#### Sign In to Ollama Cloud
+```bash
+POST /api/v1/llama/cloud/signin
+Content-Type: application/json
+
+{
+  "email": "your-email@example.com",
+  "password": "your-password"
+}
+```
+
+#### Sign Out from Ollama Cloud
+```bash
+POST /api/v1/llama/cloud/signout
+```
+
+#### List Cloud Models
+```bash
+GET /api/v1/llama/cloud/models
+```
+
+## 🧪 Testing
+
+### Run the Test Suite
+
+1. Start the server:
+```bash
+go run main.go
+```
+
+2. In another terminal, run the test script:
+```bash
+go run tests/ollama_cloud_test.go
+```
+
+The test script will verify:
+- Server health
+- Model listing
+- Chat completions
+- Text completions
+- Embeddings generation
+- Cloud authentication
+- Streaming responses
+
+### Manual Testing with cURL
+
+Test chat completion:
+```bash
+curl -X POST http://localhost:8080/api/v1/llama/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.2:1b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello! Tell me about Ollama."
+      }
+    ],
+    "stream": false
+  }'
+```
+
+Test streaming chat:
+```bash
+curl -X POST http://localhost:8080/api/v1/llama/stream/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.2:1b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Tell me a short story"
+      }
+    ],
+    "stream": true
+  }'
+```
+
+## 🏗️ Architecture
+
+### Project Structure
+```
+agent-ollama-gin/
+├── config/          # Configuration management
+├── handlers/        # HTTP request handlers
+├── models/          # Data models and structures
+├── services/        # Business logic and Ollama integration
+├── tests/           # Test files
+├── main.go          # Application entry point
+├── go.mod           # Go module dependencies
+└── env.example      # Environment configuration template
+```
+
+### Key Components
+
+- **Config**: Manages environment variables and application configuration
+- **Services**: Handles Ollama API communication and cloud integration
+- **Handlers**: Processes HTTP requests and responses
+- **Models**: Defines data structures for requests and responses
+
+## 🔧 Configuration Options
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `8080` |
+| `OLLAMA_HOST` | Local Ollama host URL | `http://localhost:11434` |
+| `LLAMA_CLOUD_ENABLED` | Enable cloud models | `false` |
+| `LLAMA_CLOUD_API_URL` | Ollama cloud API URL | `https://api.ollama.com` |
+| `LLAMA_CLOUD_API_KEY` | Your Ollama cloud API key | - |
+| `LLAMA_SIGNED_IN` | Cloud authentication status | `false` |
+
+## 🌟 Migration from Genkit
+
+This service has been completely migrated from Google's Genkit framework to native Ollama cloud integration:
+
+### What Changed:
+- ✅ Removed all Genkit dependencies
+- ✅ Implemented direct Ollama cloud API integration
+- ✅ Added cloud authentication support
+- ✅ Enhanced model management capabilities
+- ✅ Improved streaming responses
+- ✅ Added comprehensive testing
+
+### Benefits:
+- **Better Performance**: Direct API calls without framework overhead
+- **Cloud Support**: Native integration with Ollama cloud models
+- **Flexibility**: Support for both local and cloud models
+- **Scalability**: Enhanced for production deployments
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run tests: `make test`
+4. Add tests for new functionality
 5. Submit a pull request
 
-## Troubleshooting
+## 📄 License
 
-### Common Issues
+This project is licensed under the MIT License.
 
-1. **Genkit not found after installation**
-   ```bash
-   # Add to your PATH
-   export PATH=$PATH:$HOME/.local/bin
-   source ~/.bashrc  # or ~/.zshrc
-   ```
+## 🆘 Support
 
-2. **Ollama connection issues**
-   ```bash
-   # Check Ollama status
-   ollama list
-   
-   # Start Ollama service
-   ollama serve
-   ```
+For issues and questions:
+1. Check the [Ollama documentation](https://ollama.com/docs)
+2. Review the [Ollama cloud models guide](https://ollama.com/blog/cloud-models)
+3. Open an issue in this repository
 
-3. **Module path conflicts**
-   ```bash
-   # Clean module cache
-   go clean -modcache
-   go mod tidy
-   ```
+## 🔗 Related Links
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- [Gin Web Framework](https://gin-gonic.com/)
-- [Ollama](https://ollama.ai/)
-- [Firebase Genkit](https://firebase.google.com/docs/genkit)
-- [Air - Live reload](https://github.com/air-verse/air)
+- [Ollama Official Website](https://ollama.com)
+- [Ollama Cloud Models](https://ollama.com/blog/cloud-models)
+- [Gin Web Framework](https://gin-gonic.com)
+- [Go Documentation](https://golang.org/doc)
