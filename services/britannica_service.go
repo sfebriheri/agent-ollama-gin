@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"llama-api/models"
+	"agent-ollama-gin/models"
 )
 
 // BritannicaService handles Britannica Encyclopedia API interactions

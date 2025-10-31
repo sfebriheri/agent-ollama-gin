@@ -1,11 +1,11 @@
 package container
 
 import (
-	"llama-api/internal/domain"
-	"llama-api/internal/infrastructure"
-	"llama-api/internal/usecase"
-	"llama-api/pkg/cache"
-	"llama-api/pkg/logger"
+	"agent-ollama-gin/internal/domain"
+	"agent-ollama-gin/internal/infrastructure"
+	"agent-ollama-gin/internal/usecase"
+	"agent-ollama-gin/pkg/cache"
+	"agent-ollama-gin/pkg/logger"
 )
 
 // Container holds all application dependencies

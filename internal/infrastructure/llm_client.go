@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"llama-api/internal/domain"
-	"llama-api/pkg/errors"
-	"llama-api/pkg/logger"
+	"agent-ollama-gin/internal/domain"
+	"agent-ollama-gin/pkg/errors"
+	"agent-ollama-gin/pkg/logger"
 )
 
 // OllamaClient handles communication with Ollama API

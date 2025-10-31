@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"llama-api/internal/domain"
-	"llama-api/internal/infrastructure"
-	"llama-api/pkg/logger"
+	"agent-ollama-gin/internal/domain"
+	"agent-ollama-gin/internal/infrastructure"
+	"agent-ollama-gin/pkg/logger"
 )
 
 // EncyclopediaUsecase implements domain.EncyclopediaUsecase interface

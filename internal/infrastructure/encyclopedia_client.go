@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
-	"llama-api/internal/domain"
-	"llama-api/pkg/errors"
-	"llama-api/pkg/logger"
+	"agent-ollama-gin/internal/domain"
+	"agent-ollama-gin/pkg/errors"
+	"agent-ollama-gin/pkg/logger"
 )
 
 // WikipediaClient handles Wikipedia API communication

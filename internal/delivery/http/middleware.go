@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"llama-api/pkg/logger"
+	"agent-ollama-gin/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
