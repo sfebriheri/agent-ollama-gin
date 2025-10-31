@@ -6,7 +6,7 @@ on:
       - main
       - feat/encyclopedia
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
       - main
@@ -28,7 +28,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != ''
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -47,7 +47,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ secrets.DOCKER_USERNAME }}/agent-ollama-gin
+            ${{ secrets.DOCKER_USERNAME != '' && format('{0}/agent-ollama-gin', secrets.DOCKER_USERNAME) || '' }}
             ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=branch
@@ -71,7 +71,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
