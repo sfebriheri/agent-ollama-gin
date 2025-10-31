@@ -2,6 +2,8 @@
 
 This directory contains Terraform configuration for managing GitHub Actions workflows and branch protection rules for the Agent Ollama Gin project.
 
+**For comprehensive CI/CD documentation, see**: `../docs/CI_CD.md`
+
 ## Overview
 
 The Terraform configuration automates the setup of:
