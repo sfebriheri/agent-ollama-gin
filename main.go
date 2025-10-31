@@ -70,6 +70,12 @@ func main() {
 				"Llama LLM integration",
 			},
 			"docs": "Check README.md for full API documentation",
+			"features": []string{
+				"Local Ollama models",
+				"Ollama cloud models",
+				"Authentication",
+				"Streaming responses",
+			},
 		})
 	})
 
@@ -88,10 +94,25 @@ func main() {
 		// Llama LLM endpoints
 		llama := api.Group("/llama")
 		{
+			// Core endpoints
 			llama.POST("/chat", llamaHandler.Chat)
 			llama.POST("/completion", llamaHandler.Completion)
 			llama.POST("/embedding", llamaHandler.Embedding)
 			llama.GET("/models", llamaHandler.ListModels)
+
+			// Streaming endpoints
+			llama.POST("/chat/stream", llamaHandler.StreamChat)
+
+			// Model management
+			llama.POST("/models/:model/pull", llamaHandler.PullModel)
+
+			// Cloud endpoints
+			cloud := llama.Group("/cloud")
+			{
+				cloud.POST("/signin", llamaHandler.SignIn)
+				cloud.POST("/signout", llamaHandler.SignOut)
+				cloud.GET("/models", llamaHandler.ListCloudModels)
+			}
 		}
 
 		// Encyclopedia endpoints
@@ -112,7 +133,9 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Starting Llama API server on port %s", port)
+	log.Printf("Starting Llama API server with Ollama Cloud support on port %s", port)
+
+	// Start the server
 	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

@@ -1,8 +1,8 @@
-# 🚀 Llama API with Gin Framework
+# Agent Ollama Gin - Ollama Cloud Integration
 
-A high-performance REST API for Llama Large Language Models built with Go and the Gin web framework. This project provides a clean, scalable interface to interact with Llama models through Ollama, with comprehensive development tools and automation.
+A powerful REST API service built with Go and Gin framework that provides seamless integration with Ollama cloud models. This service has been migrated from Genkit to support Ollama's cloud infrastructure for enhanced AI model access.
 
-## ✨ Features
+## 🚀 Features
 
 - 🚀 **Fast & Lightweight**: Built with Go and Gin for high performance
 - 🤖 **LLM Integration**: Seamless integration with Llama models via Ollama
@@ -20,470 +20,265 @@ A high-performance REST API for Llama Large Language Models built with Go and th
 - 🧹 **Auto-Cleaning**: Comprehensive development environment management
 - 🔄 **Hot Reloading**: Development with auto-restart on file changes
 
-## 🏗️ Architecture
+## 📋 Prerequisites
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client Apps   │───▶│   Gin API       │───▶│   Ollama        │
-│   (Web/CLI)    │    │   (Port 8080)   │    │   (Port 11434)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │   PostgreSQL    │
-                       │   (Port 5432)   │
-                       └─────────────────┘
-```
+- Go 1.25.1 or higher
+- Ollama installed locally (for local models)
+- Ollama cloud account (for cloud models)
 
-### **Technology Stack**
-- **Backend**: Go 1.21+ with Gin framework
-- **LLM**: Llama models via Ollama
-- **Database**: PostgreSQL (optional)
-- **Cache**: Redis (optional)
-- **Containerization**: Docker & Docker Compose
-- **API**: RESTful API with JSON responses
+## 🛠️ Installation
 
-## 🚀 Quick Start (30 Seconds)
-
-### **Option 1: Interactive Menu (Recommended)**
+1. Clone the repository:
 ```bash
-# Start the interactive development workflow
-make workflow
-# or
-./llama-api.sh
+git clone <repository-url>
+cd agent-ollama-gin
 ```
 
-### **Option 2: Quick Setup**
+2. Install dependencies:
 ```bash
-# One-time setup
-./llama-api.sh
-
-# Daily development start
-./llama-api.sh
+go mod tidy
 ```
 
-### **Option 3: Makefile Commands**
-```bash
-# Check what's available
-make help
-
-# Quick start
-make quick-start
-
-# Start development
-make dev
-```
-
-## 🛠️ Development Environment Setup
-
-### **Prerequisites**
-- Go 1.21 or higher
-- Docker and Docker Compose
-- Ollama (for local development)
-
-### **Complete Setup (One-time)**
-```bash
-# Run the complete setup script
-./llama-api.sh
-
-# This will install:
-# - Go (if not present)
-# - Docker (if not present)
-# - Ollama (if not present)
-# - Go dependencies
-# - Default Llama model
-# - Development scripts
-```
-
-### **Daily Development Start**
-```bash
-# Quick setup and start
-./llama-api.sh
-
-# Or use interactive menu
-./llama-api.sh
-
-# Or use Makefile
-make quick-start
-```
-
-## 🔄 Development Workflow
-
-### **Start Development Environment**
-```bash
-# Start full development environment (Ollama + API)
-./llama-api.sh
-
-# Or with hot reloading (recommended)
-make watch
-
-# Or use Makefile
-make dev
-```
-
-### **Development Commands**
-```bash
-# Build the application
-make build
-
-# Run the application
-make run
-
-# Run tests
-make test
-
-# Run with hot reloading
-make watch
-
-# Stop development environment
-./llama-api.sh
-```
-
-### **Testing**
-```bash
-# Test API endpoints
-./llama-api.sh
-
-# Run all tests
-make test
-
-# Run tests with coverage
-make test-coverage
-```
-
-## 🧹 Cleaning & Maintenance
-
-### **Cleaning Commands**
-```bash
-# Basic cleaning (daily)
-make clean
-
-# Deep cleaning (weekly)
-make deep-clean
-
-# Docker cleaning
-make clean-docker
-
-# Complete cleanup (environment reset)
-make clean-all
-
-# Interactive cleaning menu
-make clean-interactive
-```
-
-## 📦 Size Optimization
-
-### **Minimize Project Size**
-To reduce the project size for distribution or storage without changing the file structure:
-
-```bash
-# Use the existing cleanup commands
-make deep-clean
-make clean-docker
-
-# Or manually remove:
-# - Compiled binaries (can be rebuilt)
-# - Node.js dependencies (can be reinstalled)
-# - Python virtual environments (can be recreated)
-# - Log files and temporary files
-```
-
-### **Restore Functionality After Cleanup**
-```bash
-# Rebuild binaries
-make build
-
-# Restore Node.js dependencies
-cd examples && npm install
-
-# Recreate Python virtual environment
-cd examples && python -m venv venv
-cd path/to && python -m venv venv
-```
-
-### **Size Before/After Optimization**
-- **Before**: ~80MB+ (with binaries, dependencies, and environments)
-- **After**: ~17MB (source code and configuration only)
-- **Savings**: ~80% size reduction
-
-### **What Gets Cleaned**
-- **Build artifacts**: `bin/`, `coverage.out`, `tmp/`
-- **Generated files**: `logs/`, `*.log`, Go caches
-- **Docker resources**: Containers, volumes, cache
-- **System files**: `.DS_Store`, `Thumbs.db`, backup files
-
-### **Safety Features**
-- **Preview mode** - See what will be cleaned before doing it
-- **Confirmation prompts** - For dangerous operations
-- **Selective cleaning** - Choose specific directories
-- **Integration** - Available in development workflow
-
-## 🐳 Docker Development
-
-### **Using Docker**
-```bash
-# Start only Ollama (recommended for local development)
-make docker-dev
-
-# Start full stack
-make docker-run
-
-# Stop services
-make docker-stop
-
-# View logs
-make logs-api
-make logs-ollama
-```
-
-### **Docker vs Local Development**
-- **Local Development**: Faster iteration, direct access to files
-- **Docker Development**: Consistent environment, easier deployment testing
-
-## 📡 API Endpoints
-
-### **Quick Reference**
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/health` | Health check |
-| `POST` | `/api/v1/llama/chat` | Chat completion |
-| `POST` | `/api/v1/llama/completion` | Text completion |
-| `POST` | `/api/v1/llama/embedding` | Text embedding |
-| `GET` | `/api/v1/llama/models` | List models |
-| `POST` | `/api/v1/llama/stream-chat` | Streaming chat |
-
-### **Detailed Examples**
-
-#### **Health Check**
-```http
-GET /api/v1/health
-```
-
-#### **Chat Completion**
-```http
-POST /api/v1/llama/chat
-Content-Type: application/json
-
-{
-  "messages": [
-    {"role": "user", "content": "Hello, how are you?"}
-  ],
-  "model": "llama2",
-  "temperature": 0.7,
-  "max_tokens": 100
-}
-```
-
-#### **Text Completion**
-```http
-POST /api/v1/llama/completion
-Content-Type: application/json
-
-{
-  "prompt": "The future of artificial intelligence is",
-  "model": "llama2",
-  "temperature": 0.8,
-  "max_tokens": 50
-}
-```
-
-#### **Text Embedding**
-```http
-POST /api/v1/llama/embedding
-Content-Type: application/json
-
-{
-  "input": "This is a sample text for embedding",
-  "model": "llama2"
-}
-```
-
-#### **List Models**
-```http
-GET /api/v1/llama/models
-```
-
-#### **Streaming Chat**
-```http
-POST /api/v1/llama/stream-chat
-Content-Type: application/json
-
-{
-  "messages": [
-    {"role": "user", "content": "Tell me a story"}
-  ],
-  "model": "llama2",
-  "stream": true
-}
-```
-
-
-
-## 🌐 Client Examples & Testing
-
-### **Shell Script Testing**
-```bash
-# Test all API endpoints
-./test_api.sh
-```
-
-### **Python Client**
-```bash
-cd examples
-pip install -r requirements.txt
-python python_client.py
-```
-
-### **Node.js Client**
-```bash
-cd examples
-npm install
-npm start
-```
-
-### **Web Interface**
-Open `examples/web_interface.html` in your browser for a beautiful, responsive web UI with tabbed interface for different endpoints.
-
-### **Client Features**
-- **Python Client**: Full-featured client with error handling, supports all API endpoints
-- **Node.js Client**: Async/await based client with comprehensive error handling
-- **Web Interface**: Beautiful, responsive web UI with real-time API testing
-
-## ⚙️ Configuration
-
-### **Environment Variables**
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8080` | API server port |
-| `HOST` | `0.0.0.0` | API server host |
-| `LLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
-| `LLAMA_API_KEY` | `` | API key for authentication |
-| `LLAMA_DEFAULT_MODEL` | `llama2` | Default model to use |
-| `LLAMA_TIMEOUT` | `60` | Request timeout in seconds |
-| `DB_HOST` | `localhost` | Database host |
-| `DB_PORT` | `5432` | Database port |
-| `DB_USER` | `postgres` | Database user |
-| `DB_PASSWORD` | `` | Database password |
-| `DB_NAME` | `llama_api` | Database name |
-
-### **Configuration File**
-Create a `.env` file from the template:
+3. Copy environment configuration:
 ```bash
 cp env.example .env
 ```
 
-## 🔍 Monitoring & Health
+4. Configure your environment variables in `.env`:
+```env
+# Server Configuration
+PORT=8080
 
-### **Health Endpoints**
-- **Health Check**: `/api/v1/health` - API status and version
-- **Docker Health Checks**: Built-in container monitoring
-- **Structured Logging**: Go's standard library logging
-- **Error Tracking**: Comprehensive error handling and reporting
+# Ollama Configuration
+OLLAMA_HOST=http://localhost:11434
 
-### **Performance Characteristics**
-- **Response Time**: 100-500ms for chat completions
-- **Throughput**: 1000+ concurrent requests
-- **Memory Usage**: ~50MB for API service
-- **Scalability**: Horizontal scaling supported via load balancer
-
-### **Health Checks**
-```bash
-# Check all services
-make health-check
-
-# Check API specifically
-curl http://localhost:8080/api/v1/health
-
-# Check Ollama
-curl http://localhost:11434/api/tags
+# Ollama Cloud Configuration
+LLAMA_CLOUD_ENABLED=true
+LLAMA_CLOUD_API_URL=https://api.ollama.com
+LLAMA_CLOUD_API_KEY=your_api_key_here
+LLAMA_SIGNED_IN=false
 ```
 
-### **Status Monitoring**
+## 🚀 Running the Service
+
+1. Start the server:
 ```bash
-# Check environment status
-make status
-
-# View logs
-make logs-api
-make logs-ollama
-
-# Follow logs in real-time
-docker-compose logs -f api
+go run main.go
 ```
 
-### **Model Management**
+2. The API will be available at `http://localhost:8080`
+
+3. Check the health endpoint:
 ```bash
-# List available models
-make list-models
-
-# Pull a new model
-make pull-model
-
-# Pull specific model
-ollama pull codellama:7b
+curl http://localhost:8080/
 ```
 
-## 🤖 Available Models
+## 📚 API Endpoints
 
-The API works with any model available in Ollama. Some popular options:
+### Core Endpoints
 
-- `llama2` - Meta's Llama 2 model
-- `llama2:7b` - 7B parameter version
-- `llama2:13b` - 13B parameter version
-- `llama2:70b` - 70B parameter version
-- `codellama` - Code-focused Llama variant
-- `mistral` - Mistral AI's model
+#### Chat Completion
+```bash
+POST /api/v1/llama/chat
+Content-Type: application/json
 
-## 📁 Project Structure
+{
+  "model": "llama3.2:1b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello! How are you?"
+    }
+  ],
+  "stream": false
+}
+```
 
+#### Text Completion
+```bash
+POST /api/v1/llama/completion
+Content-Type: application/json
+
+{
+  "model": "llama3.2:1b",
+  "prompt": "The future of artificial intelligence is",
+  "stream": false
+}
+```
+
+#### Generate Embeddings
+```bash
+POST /api/v1/llama/embedding
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "Text to generate embeddings for"
+}
+```
+
+#### List Models
+```bash
+GET /api/v1/llama/models
+```
+
+### Streaming Endpoints
+
+#### Streaming Chat
+```bash
+POST /api/v1/llama/stream/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2:1b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tell me a story"
+    }
+  ],
+  "stream": true
+}
+```
+
+### Model Management
+
+#### Pull Model
+```bash
+POST /api/v1/llama/pull
+Content-Type: application/json
+
+{
+  "name": "llama3.2:1b"
+}
+```
+
+### Cloud Authentication
+
+#### Sign In to Ollama Cloud
+```bash
+POST /api/v1/llama/cloud/signin
+Content-Type: application/json
+
+{
+  "email": "your-email@example.com",
+  "password": "your-password"
+}
+```
+
+#### Sign Out from Ollama Cloud
+```bash
+POST /api/v1/llama/cloud/signout
+```
+
+#### List Cloud Models
+```bash
+GET /api/v1/llama/cloud/models
+```
+
+## 🧪 Testing
+
+### Run the Test Suite
+
+1. Start the server:
+```bash
+go run main.go
+```
+
+2. In another terminal, run the test script:
+```bash
+go run tests/ollama_cloud_test.go
+```
+
+The test script will verify:
+- Server health
+- Model listing
+- Chat completions
+- Text completions
+- Embeddings generation
+- Cloud authentication
+- Streaming responses
+
+### Manual Testing with cURL
+
+Test chat completion:
+```bash
+curl -X POST http://localhost:8080/api/v1/llama/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.2:1b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello! Tell me about Ollama."
+      }
+    ],
+    "stream": false
+  }'
+```
+
+Test streaming chat:
+```bash
+curl -X POST http://localhost:8080/api/v1/llama/stream/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.2:1b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Tell me a short story"
+      }
+    ],
+    "stream": true
+  }'
+```
+
+## 🏗️ Architecture
+
+### Project Structure
 ```
 agent-ollama-gin/
-├── main.go                 # Application entry point
-├── go.mod                  # Go module file
-├── go.sum                  # Go module checksums
-├── llama-api.sh            # 🆕 UNIFIED SCRIPT (all functionality)
-├── .air.toml               # Hot reloading configuration
-├── Makefile                # Build and development commands
-├── docker-compose.yml      # Service orchestration
-├── Dockerfile              # Container definition
-├── .env                    # Environment variables
-├── .gitignore              # Version control exclusions
-├── bin/                    # Build output directory
-├── logs/                   # Log files directory
-├── handlers/               # HTTP request handlers
-├── services/               # Business logic
-├── models/                 # Data structures
-└── config/                 # Configuration management
+├── config/          # Configuration management
+├── handlers/        # HTTP request handlers
+├── models/          # Data models and structures
+├── services/        # Business logic and Ollama integration
+├── tests/           # Test files
+├── main.go          # Application entry point
+├── go.mod           # Go module dependencies
+└── env.example      # Environment configuration template
 ```
 
-## 🛠️ Development Commands
+### Key Components
 
-### **Basic Commands**
-```bash
-# Build the application
-make build
+- **Config**: Manages environment variables and application configuration
+- **Services**: Handles Ollama API communication and cloud integration
+- **Handlers**: Processes HTTP requests and responses
+- **Models**: Defines data structures for requests and responses
 
-# Run the application
-make run
+## 🔧 Configuration Options
 
-# Run tests
-make test
+### Environment Variables
 
-# Clean build artifacts
-make clean
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `8080` |
+| `OLLAMA_HOST` | Local Ollama host URL | `http://localhost:11434` |
+| `LLAMA_CLOUD_ENABLED` | Enable cloud models | `false` |
+| `LLAMA_CLOUD_API_URL` | Ollama cloud API URL | `https://api.ollama.com` |
+| `LLAMA_CLOUD_API_KEY` | Your Ollama cloud API key | - |
+| `LLAMA_SIGNED_IN` | Cloud authentication status | `false` |
 
-### **Development Environment**
-```bash
-# Start development environment
-make dev
+## 🌟 Migration from Genkit
 
-# Stop development environment
-make stop-dev
+This service has been completely migrated from Google's Genkit framework to native Ollama cloud integration:
 
-# Test API endpoints
-make test-api
+### What Changed:
+- ✅ Removed all Genkit dependencies
+- ✅ Implemented direct Ollama cloud API integration
+- ✅ Added cloud authentication support
+- ✅ Enhanced model management capabilities
+- ✅ Improved streaming responses
+- ✅ Added comprehensive testing
 
 # Health check
 make health-check
@@ -753,46 +548,23 @@ make build-cli
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
+4. Add tests for new functionality
 5. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 🆘 Support
 
-- Create an issue for bugs or feature requests
-- Check the [Ollama documentation](https://ollama.ai/docs)
-- Review the [Gin framework docs](https://gin-gonic.com/docs/)
+For issues and questions:
+1. Check the [Ollama documentation](https://ollama.com/docs)
+2. Review the [Ollama cloud models guide](https://ollama.com/blog/cloud-models)
+3. Open an issue in this repository
 
-## 🎯 What You Can Do Now
+## 🔗 Related Links
 
-1. **Start the API**: Use Docker Compose or local development
-2. **Test Endpoints**: Use the provided test scripts and examples
-3. **Integrate**: Use the client examples in your own projects
-4. **Customize**: Modify the code to add new features
-5. **Scale**: Deploy to production with the provided Docker setup
-
-## 🔗 Useful Links
-
-- [Ollama Documentation](https://ollama.ai/docs)
-- [Gin Framework](https://gin-gonic.com/docs/)
-- [Go Documentation](https://golang.org/doc/)
-- [Docker Documentation](https://docs.docker.com/)
-
----
-
-## 🎉 **You're Ready!**
-
-Your Llama API development environment is now:
-- ✅ **Fully automated** with setup scripts
-- ✅ **Terminal-friendly** with bash scripts and Makefile
-- ✅ **Hot reloading** ready for fast development
-- ✅ **Docker integrated** for consistent environments
-- ✅ **Auto-cleaning** for tidy development
-- ✅ **Well documented** with comprehensive guides
-
-**Happy coding! 🚀**
-
-*Your Llama API project is now a developer-friendly, terminal-based development powerhouse with professional-grade cleaning and maintenance tools!*
+- [Ollama Official Website](https://ollama.com)
+- [Ollama Cloud Models](https://ollama.com/blog/cloud-models)
+- [Gin Web Framework](https://gin-gonic.com)
+- [Go Documentation](https://golang.org/doc)

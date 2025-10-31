@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-build docker-run docker-stop install-deps lint format
+# Makefile for agent-ollama-gin
 
 # Default target
 help:
@@ -15,14 +15,14 @@ help:
 	@echo "  lint          - Run linter"
 	@echo "  format        - Format Go code"
 
-# Install dependencies
-install-deps:
-	go mod download
-	go mod tidy
+# Go commands
+.PHONY: build run clean test deps install-tools install-genkit dev watch
 
 # Build the application
-build: install-deps
-	go build -o bin/llama-api main.go
+build:
+	@echo "Building $(BINARY_NAME)..."
+	@mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
 
 # Build the encyclopedia CLI
 build-cli: install-deps

@@ -23,6 +23,10 @@ type LlamaConfig struct {
 	APIKey       string
 	DefaultModel string
 	Timeout      int
+	CloudEnabled bool
+	CloudAPIURL  string
+	CloudAPIKey  string
+	SignedIn     bool
 }
 
 type DatabaseConfig struct {
@@ -47,6 +51,10 @@ func Load() *Config {
 			APIKey:       getEnv("LLAMA_API_KEY", ""),
 			DefaultModel: getEnv("LLAMA_DEFAULT_MODEL", "llama2"),
 			Timeout:      getEnvAsInt("LLAMA_TIMEOUT", 60),
+			CloudEnabled: getEnv("LLAMA_CLOUD_ENABLED", "false") == "true",
+			CloudAPIURL:  getEnv("LLAMA_CLOUD_API_URL", "https://api.ollama.com"),
+			CloudAPIKey:  getEnv("LLAMA_CLOUD_API_KEY", ""),
+			SignedIn:     getEnv("LLAMA_SIGNED_IN", "false") == "true",
 		},
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
