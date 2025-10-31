@@ -32,7 +32,7 @@ The Terraform configuration automates the setup of:
 ### 1. Initialize Terraform
 
 ```bash
-cd terraform
+cd .github/workflows/terraform
 terraform init
 ```
 
@@ -134,18 +134,18 @@ Set these in: Settings → Secrets and variables → Actions → New repository 
 ## File Structure
 
 ```
-terraform/
-├── main.tf                      # Primary configuration
-├── variables.tf                 # Input variables
-├── outputs.tf                   # Output values
-├── terraform.tfvars.example     # Example variables
-├── workflows/
-│   ├── build.yml               # Build workflow
-│   ├── test.yml                # Test workflow
-│   ├── lint.yml                # Lint workflow
-│   ├── docker.yml              # Docker workflow
-│   └── security.yml            # Security workflow
-└── README.md                    # This file
+.github/workflows/
+├── terraform/
+│   ├── main.tf                      # Primary configuration
+│   ├── variables.tf                 # Input variables
+│   ├── outputs.tf                   # Output values
+│   ├── terraform.tfvars.example     # Example variables
+│   └── README.md                    # This file
+├── build.yml                        # Build workflow
+├── test.yml                         # Test workflow
+├── lint.yml                         # Lint workflow
+├── docker.yml                       # Docker workflow
+└── security.yml                     # Security workflow
 ```
 
 ## Usage
@@ -159,7 +159,7 @@ terraform state show 'github_repository_file.build_workflow'
 
 ### Update Workflows
 
-Edit workflow files in `terraform/workflows/` and apply:
+Edit workflow files in `.github/workflows/` and apply:
 
 ```bash
 terraform apply
@@ -190,7 +190,7 @@ echo $TF_VAR_github_token
 terraform plan
 
 # Verify file paths exist
-ls -la workflows/
+ls -la ../
 ```
 
 ### Branch Protection Errors
