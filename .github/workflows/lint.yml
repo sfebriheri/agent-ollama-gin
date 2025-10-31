@@ -1,0 +1,73 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+      - feat/encyclopedia
+  pull_request:
+    branches:
+      - main
+      - feat/encyclopedia
+
+jobs:
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run go fmt
+        run: |
+          gofmt_output=$(gofmt -l .)
+          if [ -n "$gofmt_output" ]; then
+            echo "Files need formatting:"
+            echo "$gofmt_output"
+            exit 1
+          fi
+          echo "✓ All files are properly formatted"
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run go mod tidy check
+        run: |
+          go mod tidy
+          if ! git diff --exit-code go.mod go.sum; then
+            echo "go.mod or go.sum is out of sync"
+            exit 1
+          fi
+          echo "✓ go.mod and go.sum are in sync"
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: --timeout=5m
+
+      - name: Run staticcheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          staticcheck ./...
+
+      - name: Verify code quality
+        run: |
+          echo "✓ Code formatting verified"
+          echo "✓ Code analysis passed"
+          echo "✓ Dependency checks passed"
