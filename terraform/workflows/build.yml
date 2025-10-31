@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - feat/encyclopedia
+  pull_request:
+    branches:
+      - main
+      - feat/encyclopedia
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.25.1', '1.24.0']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build application
+        run: go build -v -o bin/agent-ollama-gin ./
+
+      - name: Build CLI
+        run: go build -v -o bin/encyclopedia ./cmd/encyclopedia
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-go-${{ matrix.go-version }}
+          path: bin/
+          retention-days: 7
+
+      - name: Verify build integrity
+        run: |
+          [ -f bin/agent-ollama-gin ] && echo "✓ Main binary built successfully"
+          [ -f bin/encyclopedia ] && echo "✓ CLI binary built successfully"
