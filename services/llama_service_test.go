@@ -20,9 +20,9 @@ func TestIsCloudModel(t *testing.T) {
 	service := NewLlamaService()
 
 	tests := []struct {
-		name       string
-		modelName  string
-		isCloud    bool
+		name      string
+		modelName string
+		isCloud   bool
 	}{
 		{
 			name:      "Cloud model",
