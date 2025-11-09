@@ -11,10 +11,10 @@ import (
 )
 
 type LlamaHandler struct {
-	llamaService *services.LlamaService
+	llamaService services.LlamaServiceInterface
 }
 
-func NewLlamaHandler(llamaService *services.LlamaService) *LlamaHandler {
+func NewLlamaHandler(llamaService services.LlamaServiceInterface) *LlamaHandler {
 	return &LlamaHandler{
 		llamaService: llamaService,
 	}

@@ -170,6 +170,17 @@ docs/site/
 *.tfstate.*
 .terraform/
 .terraform.lock.hcl
+terraform.tfvars
+terraform.tfplan
+*.tfplan
+.terraformrc
+terraform.rc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+crash.*.log
 
 # Kubernetes (if used for deployment)
 *.kubeconfig
