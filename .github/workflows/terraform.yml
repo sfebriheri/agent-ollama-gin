@@ -1,0 +1,280 @@
+name: Terraform
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - claude/**
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+
+env:
+  TF_VERSION: '1.5.0'
+  TF_WORKING_DIR: './terraform'
+
+jobs:
+  # Terraform Validation and Formatting
+  validate:
+    name: Validate and Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        continue-on-error: true
+
+      - name: Terraform Format (show diff if failed)
+        if: steps.fmt.outcome == 'failure'
+        run: |
+          echo "❌ Terraform files are not properly formatted"
+          echo "Run 'terraform fmt -recursive' to fix formatting"
+          terraform fmt -check -recursive -diff
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Validation Summary
+        run: |
+          echo "========================================="
+          echo "      Terraform Validation Summary      "
+          echo "========================================="
+          echo "✓ Format Check: ${{ steps.fmt.outcome }}"
+          echo "✓ Validation: Success"
+          echo "========================================="
+
+  # Terraform Plan
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Create terraform.tfvars for testing
+        run: |
+          cat > terraform.tfvars <<EOF
+          app_name            = "agent-ollama-gin"
+          environment         = "test"
+          app_port            = 8080
+          gin_mode            = "test"
+          log_level           = "info"
+          ollama_base_url     = "http://localhost:11434"
+          ollama_default_model = "llama2"
+          ollama_timeout      = 300
+          ollama_cloud_enabled = false
+          generate_config     = false
+          setup_test_env      = false
+          run_health_check    = false
+          generate_ci_config  = false
+          enable_monitoring   = false
+          EOF
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Save Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TF_WORKING_DIR }}/tfplan
+          retention-days: 7
+
+      - name: Comment Plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = `#### Terraform Plan 📝
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            Plan output available in artifacts
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: plan
+            });
+
+  # Terraform Security Scan
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ${{ env.TF_WORKING_DIR }}
+          soft_fail: true
+
+      - name: Upload tfsec results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tfsec-results
+          path: tfsec-results.json
+          retention-days: 7
+
+  # Terraform Docs Generation
+  docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Render terraform docs
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+          working-dir: ${{ env.TF_WORKING_DIR }}
+          output-file: TERRAFORM.md
+          output-method: inject
+          git-push: false
+
+      - name: Upload Terraform docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-docs
+          path: ${{ env.TF_WORKING_DIR }}/TERRAFORM.md
+          retention-days: 7
+
+  # Test Apply (dry-run in test environment)
+  test-apply:
+    name: Test Apply
+    runs-on: ubuntu-latest
+    needs: [plan, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Create test configuration
+        run: |
+          cat > terraform.tfvars <<EOF
+          app_name            = "agent-ollama-gin"
+          environment         = "test"
+          app_port            = 8080
+          gin_mode            = "test"
+          ollama_base_url     = "http://localhost:11434"
+          ollama_default_model = "llama2"
+          generate_config     = true
+          setup_test_env      = true
+          run_health_check    = true
+          generate_ci_config  = true
+          EOF
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform Apply (test environment)
+        run: terraform apply -auto-approve
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Show Outputs
+        run: terraform output -json | jq '.'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Upload generated configs
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-configs
+          path: |
+            ${{ env.TF_WORKING_DIR }}/.env.*
+            ${{ env.TF_WORKING_DIR }}/ci-config.json
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: terraform destroy -auto-approve
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+  # Summary
+  summary:
+    name: Terraform Summary
+    runs-on: ubuntu-latest
+    needs: [validate, plan, security, docs]
+    if: always()
+
+    steps:
+      - name: Check Results
+        run: |
+          echo "========================================="
+          echo "      Terraform Workflow Summary        "
+          echo "========================================="
+          echo ""
+          echo "✓ Validation: ${{ needs.validate.result }}"
+          echo "✓ Plan: ${{ needs.plan.result }}"
+          echo "✓ Security Scan: ${{ needs.security.result }}"
+          echo "✓ Documentation: ${{ needs.docs.result }}"
+          echo ""
+          echo "========================================="
+
+          if [[ "${{ needs.validate.result }}" == "failure" || \
+                "${{ needs.plan.result }}" == "failure" ]]; then
+            echo "⚠️  Some checks failed"
+            exit 1
+          fi
+
+          echo "🎉 Terraform checks passed!"
