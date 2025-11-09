@@ -61,11 +61,11 @@ output "configuration_summary" {
       cloud_api_url = var.ollama_cloud_api_url
     }
     features = {
-      monitoring      = var.enable_monitoring
-      health_check    = var.run_health_check
-      test_env_setup  = var.setup_test_env
-      config_gen      = var.generate_config
-      ci_config_gen   = var.generate_ci_config
+      monitoring     = var.enable_monitoring
+      health_check   = var.run_health_check
+      test_env_setup = var.setup_test_env
+      config_gen     = var.generate_config
+      ci_config_gen  = var.generate_ci_config
     }
   }
 }
