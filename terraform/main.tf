@@ -60,15 +60,15 @@ resource "null_resource" "test_setup" {
 
   triggers = {
     config_hash = md5(jsonencode({
-      app_name              = var.app_name
-      environment           = var.environment
-      app_port              = var.app_port
-      ollama_base_url       = var.ollama_base_url
-      ollama_default_model  = var.ollama_default_model
-      ollama_timeout        = var.ollama_timeout
-      ollama_cloud_enabled  = var.ollama_cloud_enabled
-      ollama_cloud_api_url  = var.ollama_cloud_api_url
-      gin_mode              = var.gin_mode
+      app_name             = var.app_name
+      environment          = var.environment
+      app_port             = var.app_port
+      ollama_base_url      = var.ollama_base_url
+      ollama_default_model = var.ollama_default_model
+      ollama_timeout       = var.ollama_timeout
+      ollama_cloud_enabled = var.ollama_cloud_enabled
+      ollama_cloud_api_url = var.ollama_cloud_api_url
+      gin_mode             = var.gin_mode
     }))
   }
 
