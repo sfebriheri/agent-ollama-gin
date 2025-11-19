@@ -114,13 +114,27 @@ models/
 *.gguf
 *.bin
 
-# Firebase Genkit
+# Firebase Genkit (disabled)
 .genkit/
 genkit.config.js
 genkit.config.ts
 .firebase/
 firebase-debug.log
 firestore-debug.log
+genkit-disabled/
+
+# CI/CD (disabled)
+.github/
+.gitlab-ci.yml
+.circleci/
+.travis.yml
+.jenkins/
+Jenkinsfile
+.drone.yml
+azure-pipelines.yml
+.gitea/
+.gitpod.yml
+.devcontainer/
 
 # API Keys and Secrets (additional security)
 *.key
